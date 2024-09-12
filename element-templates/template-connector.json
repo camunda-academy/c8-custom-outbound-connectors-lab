@@ -52,7 +52,8 @@
       "type": "Hidden",
       "value": "io.camunda:concatenation-api:1",
       "binding": {
-        "type": "zeebe:taskDefinition:type"
+        "type": "zeebe:taskDefinition",
+        "property": "type"
       }
     }
   ],
