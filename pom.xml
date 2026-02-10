@@ -141,20 +141,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.classic.MyConnectorFunction</connectorClass>
+              <connectorClass>io.camunda.example.classic.ConcatenationConnectorFunction</connectorClass>
               <files>
                 <file>
                   <templateId>io.camunda.connector.Template.v1</templateId>
                   <templateFileName>template-connector.json</templateFileName>
-                </file>
-              </files>
-            </connector>
-            <connector>
-              <connectorClass>io.camunda.example.operations.MyConnectorProvider</connectorClass>
-              <files>
-                <file>
-                  <templateId>io.camunda.connector.Template.v2</templateId>
-                  <templateFileName>template-connector-v2.json</templateFileName>
                 </file>
               </files>
             </connector>
