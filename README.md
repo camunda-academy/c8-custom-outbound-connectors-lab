@@ -1,8 +1,11 @@
-# Connector Template — Camunda 8 Outbound Connector
+# Camunda 8 Custom Outbound Connectors Lab
 
-A starter template for building a custom **outbound** connector with the Camunda Connector SDK.
-The example uses the **annotations-based Operations API**, which lets a single connector class
-expose multiple operations (here: `echo`, `addTwoNumbers`, `processDocument`).
+A hands-on lab for building a custom **outbound** connector with the Camunda Connector SDK.
+The example implements a **`ConcatenationConnector`** that concatenates two input strings and
+returns the combined result. It uses the **annotations-based Operations API** (`OutboundConnectorProvider`
++ `@Operation`).
+
+> This lab is part of the [Camunda 8 Custom Outbound Connectors](https://academy.camunda.com/c8-custom-outbound-connectors) course on Camunda Academy.
 
 > Looking for the inbound counterpart? See the
 > [connector-template-inbound](https://github.com/camunda/connector-template-inbound) repo.
@@ -20,7 +23,6 @@ expose multiple operations (here: `echo`, `addTwoNumbers`, `processDocument`).
   - [Bundled Docker runtime (closer to production)](#bundled-docker-runtime-closer-to-production)
   - [SaaS](#saas)
 - [Testing](#testing)
-- [Document handling](#document-handling)
 - [Element template — tips and do/don't](#element-template--tips-and-dodont)
 - [Web Modeler vs Desktop Modeler](#web-modeler-vs-desktop-modeler)
 - [Troubleshooting](#troubleshooting)
@@ -35,9 +37,8 @@ Click **Use this template** on GitHub, then rename in the new repo:
 | File | What to change |
 |---|---|
 | `pom.xml` | `<artifactId>`, `<name>`, `<description>`, `<groupId>` if needed |
-| `src/main/java/io/camunda/example/MyConnector.java` | rename class; update `@OutboundConnector(name, type)` and `@ElementTemplate(id, name, version, description, icon, documentationRef)` |
+| `src/main/java/io/camunda/example/ConcatenationConnector.java` | rename class; update `@OutboundConnector(name, type)` and `@ElementTemplate(id, name, version, description, icon, documentationRef)` |
 | `src/main/resources/META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorProvider` | match new fully-qualified class name (one line) |
-| `src/main/resources/icon.svg` | replace with your icon |
 | `pom.xml` element-template-generator config (`<connectorClass>`, `<templateId>`, `<templateFileName>`) | match new connector class and template id |
 | `README.md`, `LICENSE` | your project metadata |
 
@@ -62,8 +63,8 @@ mvn clean package
 mvn -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime test-compile exec:java
 ```
 
-Then upload `element-templates/my-connector.json` to your Modeler, drop a service task, and pick
-**My Connector Template**. See [Run locally](#run-locally) for the full picture.
+Then upload `element-templates/Concatenation connector.json` to your Modeler, drop a service task,
+and pick **Concatenation Connector**. See [Run locally](#run-locally) for the full picture.
 
 ---
 
@@ -80,7 +81,7 @@ The SDK supports two styles. **Default to the Operations API** unless you have a
 | When you'd pick it | Most new connectors. Good fit when the connector wraps an API with several actions (HTTP-style: GET / POST / DELETE) | Single-purpose connectors, or when migrating an older connector and the rewrite isn't worth it |
 
 This template uses the Operations API — see
-[`MyConnector`](src/main/java/io/camunda/example/MyConnector.java). For a real-world example
+[`ConcatenationConnector`](src/main/java/io/camunda/example/ConcatenationConnector.java). For a real-world example
 covering more patterns, look at the
 [CSV Connector](https://github.com/camunda/connectors/blob/main/connectors/csv/src/main/java/io/camunda/connector/csv/CsvConnector.java).
 
@@ -180,57 +181,28 @@ Three layers, all run by `mvn clean verify`:
 
 | Layer | File | Purpose |
 |---|---|---|
-| Unit (no runtime) | [`MyConnectorTest`](src/test/java/io/camunda/example/MyConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Compiles and passes out-of-the-box. |
-| Unit (no runtime) | [`ProcessDocumentTest`](src/test/java/io/camunda/example/ProcessDocumentTest.java) | Direct method-call tests of `processDocument` — small/large documents, size limits. |
+| Unit (no runtime) | [`ConcatenationConnectorTest`](src/test/java/io/camunda/example/ConcatenationConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Verifies that `input1` and `input2` are concatenated with a space. |
+| Unit (no runtime) | [`ConcatenationRequestTest`](src/test/java/io/camunda/example/ConcatenationRequestTest.java) | Validation tests — ensures `@NotEmpty` constraints on `input1` and `input2` are enforced and raise `ConnectorInputException`. |
 | Integration | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Spins up an embedded Camunda + connector runtime and runs a real BPMN process via `@CamundaSpringProcessTest`. |
 
 The minimal pattern for unit-testing an annotations-based connector:
 
 ```java
-var connector = new MyConnector();
+var connector = new ConcatenationConnector();
 var operations = ConnectorOperations.from(connector, new ObjectMapper(), new DefaultValidationProvider());
 var function = new OutboundConnectorOperationFunction(operations);
 
 var context = OutboundConnectorContextBuilder.create()
-    .variables(Map.of("message", "hi", "authentication", Map.of("user","u","token","t")))
-    .header("operation", "echo")  // selects which @Operation to dispatch
+    .variables(Map.of("input1", "Hello", "input2", "World"))
+    .header("operation", "concatenate")  // selects which @Operation to dispatch
     .build();
 
 Object result = function.execute(context);
+// result is a ConcatenationConnectorResult with concatenationResult = "Hello World"
 ```
 
 The `operation` custom header is what the runtime uses to pick the `@Operation` method —
 forgetting to set it produces `Operation ID is missing in the job context custom headers.`
-
----
-
-## Document handling
-
-`processDocument` shows how to consume Camunda **documents** safely, including large ones.
-
-### Patterns demonstrated
-
-- **In-memory bytes** for small payloads — simple, fine for KBs.
-- **Streaming** for anything larger — bound memory use; never call `asByteArray()` on a multi-MiB
-  document running in a shared connector runtime.
-- **Multiple documents** — accept a `List<Document>` field on the request record.
-- **Size guarding** — read `document.metadata().getSize()` and reject anything above your limit
-  with a `ConnectorException("DOCUMENT_TOO_LARGE", ...)` *before* you start reading.
-
-### Heap and large-file guidance
-
-- The connector runtime is **shared**: every job competes for the same heap. A 200 MB
-  `asByteArray()` call can take the runtime down for every other connector at once.
-- Default to `asInputStream()` and stream into your sink (digest, S3 upload, etc.).
-- If you need temp storage, write to `Files.createTempFile(...)` and delete on completion (use
-  try-with-resources or a `finally`).
-- Pick a hard maximum (`MAX_DOCUMENT_SIZE_BYTES`) appropriate to your runtime's JVM heap — this
-  template uses 100 MiB as a placeholder.
-- Metadata (`getFileName`, `getContentType`, `getSize`, `getCustomProperties`) is cheap and
-  available without reading content; use it for routing decisions.
-
-See [`MyConnector#processDocument`](src/main/java/io/camunda/example/MyConnector.java) and
-[`ProcessDocumentTest`](src/test/java/io/camunda/example/ProcessDocumentTest.java).
 
 ---
 
@@ -299,7 +271,7 @@ This template currently pins:
 
 | Component | Version | Property in `pom.xml` |
 |---|---|---|
-| Connector SDK & runtime libs | `8.9.0` | `version.connectors` |
+| Connector SDK & runtime libs | `8.9.1` | `version.connectors` |
 | Camunda process-test | `8.9.0` | `version.camunda` |
 | Java | 21 | `maven.compiler.release` |
 | JUnit Jupiter | `6.0.2` | `version.junit-jupiter` |
@@ -319,40 +291,16 @@ freely swappable. When you upgrade, bump `version.connectors`, `version.camunda`
 
 ---
 
-## API reference (this template)
+## API reference (this lab)
 
-### `echo` — Echo message
+### `concatenate` — Concatenate strings
 
-| Name | Description | Example | Notes |
-|---|---|---|---|
-| `message` | Message text | `Hello World` | Echoed back. Starting with `fail` raises a non-retryable `FAIL` error; starting with `retry` raises a retryable `RETRY` error. |
-| `authentication.user` | Mock username | `alice` | No effect, demo only. |
-| `authentication.token` | Mock token | `s3cret` | No effect, demo only. |
-
-Output: `{ "result": { "myProperty": "Message received: ..." } }`
-
-### `addTwoNumbers`
-
-`A + B` (both `int`).
-
-### `processDocument`
-
-| Name | Description |
-|---|---|
-| `document` | Camunda document reference (bound automatically) |
-| `additionalDocuments` | Optional list of further documents |
-
-Output: `{ fileName, contentType, size, sha256, strategy, additionalDocumentCount }` where
-`strategy` is `"in-memory"` or `"stream"` depending on the document size.
-
-### Error codes
-
-| Code | Operation | Description |
+| Name | Description | Example |
 |---|---|---|
-| `FAIL` | `echo` | Message starts with `fail` |
-| `RETRY` | `echo` | Message starts with `retry` (decremented retries) |
-| `DOCUMENT_TOO_LARGE` | `processDocument` | Document size exceeds `MAX_DOCUMENT_SIZE_BYTES` |
-| `DOCUMENT_READ_FAILED` | `processDocument` | I/O error while reading the document stream |
+| `input1` | First string to concatenate | `Hello` |
+| `input2` | Second string to concatenate | `World` |
+
+Output: `{ "concatenationResult": "Hello World" }` — the two inputs joined with a single space.
 
 ---
 
