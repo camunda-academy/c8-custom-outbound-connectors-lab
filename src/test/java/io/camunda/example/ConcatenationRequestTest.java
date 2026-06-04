@@ -1,19 +1,18 @@
-package io.camunda.example.classic;
+package io.camunda.example;
+
+import io.camunda.connector.api.error.ConnectorInputException;
+import io.camunda.connector.runtime.test.outbound.OutboundConnectorContextBuilder;
+import io.camunda.example.model.ConcatenationConnectorRequest;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.camunda.connector.api.error.ConnectorInputException;
-import io.camunda.connector.runtime.test.outbound.OutboundConnectorContextBuilder;
-import io.camunda.dto.ConcatenationConnectorRequest;
-import org.junit.jupiter.api.Test;
-
-public class ConcatenationRequestTest {
+class ConcatenationRequestTest  {
 
   String input1, input2;
 
   @Test
-  void shouldFailWhenValidate_NoInput1() throws JsonProcessingException {
+  void shouldFailWhenValidate_NoInput1() {
       // given
       var input = new ConcatenationConnectorRequest(input1,input2);
 
@@ -28,7 +27,7 @@ public class ConcatenationRequestTest {
   }
 
   @Test
-  void shouldFailWhenValidate_NoInput2() throws JsonProcessingException {
+  void shouldFailWhenValidate_NoInput2() {
       // given
       var input = new ConcatenationConnectorRequest(input1,input2);
 
@@ -41,5 +40,5 @@ public class ConcatenationRequestTest {
         .isInstanceOf(ConnectorInputException.class)
         .hasMessageContaining("input2");
   }
-
+  
 }

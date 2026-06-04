@@ -55,6 +55,14 @@
     },
     {
       "type": "Hidden",
+      "value": "concatenate",
+      "binding": {
+        "type": "zeebe:taskHeader",
+        "key": "operation"
+      }
+    },
+    {
+      "type": "Hidden",
       "value": "io.camunda:concatenation-api:1",
       "binding": {
         "type": "zeebe:taskDefinition",

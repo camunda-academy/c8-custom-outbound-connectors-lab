@@ -1,3 +1,3 @@
-package io.camunda.example.dto;
+package io.camunda.example.model;
 
 public record ConcatenationConnectorResult(String concatenationResult) {}

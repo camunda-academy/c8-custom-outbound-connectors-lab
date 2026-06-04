@@ -14,12 +14,12 @@
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <version.connectors>8.8.2</version.connectors>
-    <version.camunda>8.8.2</version.camunda>
-    <version.assertj>3.27.7</version.assertj>
-    <version.junit-jupiter>6.0.0</version.junit-jupiter>
+    <version.connectors>8.9.1</version.connectors>
+    <version.camunda>8.9.0</version.camunda>
+    <version.assertj>3.27.4</version.assertj>
+    <version.junit-jupiter>6.0.2</version.junit-jupiter>
     <version.awaitility>4.2.0</version.awaitility>
-    <version.mockito>5.19.0</version.mockito>
+    <version.mockito>5.21.0</version.mockito>
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
@@ -33,19 +33,19 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>io.camunda.connector</groupId>
+      <artifactId>connector-validation</artifactId>
+      <version>${version.connectors}</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Element template generator annotations (compile-time only) -->
     <dependency>
       <groupId>io.camunda.connector</groupId>
-      <artifactId>element-template-generator-core</artifactId>
+      <artifactId>element-template-generator-annotations</artifactId>
       <version>${version.connectors}</version>
-    </dependency>
-
-    <!-- test dependencies -->
-    <dependency>
-      <groupId>io.camunda.connector</groupId>
-      <artifactId>connector-test</artifactId>
-      <version>${version.connectors}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -105,6 +105,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.17</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -112,7 +119,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.4</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -141,11 +148,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.classic.ConcatenationConnectorFunction</connectorClass>
+              <connectorClass>io.camunda.example.MyConnector</connectorClass>
               <files>
                 <file>
-                  <templateId>io.camunda.connector.Template.v1</templateId>
-                  <templateFileName>template-connector.json</templateFileName>
+                  <templateId>io.camunda.example.template.v1</templateId>
+                  <templateFileName>my-connector.json</templateFileName>
                 </file>
               </files>
             </connector>

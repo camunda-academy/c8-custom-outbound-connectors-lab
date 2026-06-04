@@ -1,4 +1,4 @@
-package io.camunda.dto;
+package io.camunda.example.model;
 
 import io.camunda.connector.generator.java.annotation.TemplateProperty;
 import io.camunda.connector.generator.java.annotation.TemplateProperty.PropertyType;
