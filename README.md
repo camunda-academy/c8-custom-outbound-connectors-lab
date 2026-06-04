@@ -2,8 +2,7 @@
 
 A hands-on lab for building a custom **outbound** connector with the Camunda Connector SDK.
 The example implements a **`ConcatenationConnector`** that concatenates two input strings and
-returns the combined result. It uses the **annotations-based Operations API** (`OutboundConnectorProvider`
-+ `@Operation`).
+returns the combined result. It uses the **annotations-based Operations API** (`OutboundConnectorProvider`, `@Operation`).
 
 > This lab is part of the [Camunda 8 Custom Outbound Connectors](https://academy.camunda.com/c8-custom-outbound-connectors) course on Camunda Academy.
 
