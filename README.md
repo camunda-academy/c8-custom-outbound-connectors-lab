@@ -36,13 +36,13 @@ Click **Use this template** on GitHub, then rename in the new repo:
 | File | What to change |
 |---|---|
 | `pom.xml` | `<artifactId>`, `<name>`, `<description>`, `<groupId>` if needed |
-| `src/main/java/io/camunda/example/ConcatenationConnector.java` | rename class; update `@OutboundConnector(name, type)` and `@ElementTemplate(id, name, version, description, icon, documentationRef)` |
+| `src/main/java/io/camunda/example/ConcatenationConnector.java` | rename the class and update `@OutboundConnector(name, type)` and its `@Operation` declarations |
 | `src/main/resources/META-INF/services/io.camunda.connector.api.outbound.OutboundConnectorProvider` | match new fully-qualified class name (one line) |
 | `pom.xml` element-template-generator config (`<connectorClass>`, `<templateId>`, `<templateFileName>`) | match new connector class and template id |
 | `README.md`, `LICENSE` | your project metadata |
 
-The element template (`element-templates/<your-template>.json`) is **regenerated** by `mvn package`,
-do not edit it by hand.
+The element-template generator is configured in `pom.xml`. Keep its connector class, template ID,
+and output filename aligned with your connector; do not hand-edit generated output.
 
 See the official guide on [creating a custom connector](https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/).
 
@@ -58,8 +58,9 @@ cd <your-connector>
 # 2. build, run unit + integration tests, generate element template
 mvn clean package
 
-# 3. start the local runtime (uses an embedded Camunda for testing)
-mvn -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime test-compile exec:java
+# 3. start the local runtime against the cluster configured in application.properties
+mvn test-compile exec:java -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime \
+  -Dexec.classpathScope=test
 ```
 
 Then upload `element-templates/Concatenation connector.json` to your Modeler, drop a service task,
@@ -101,6 +102,11 @@ Produces:
 - a fat JAR (shaded). SDK artifacts are in `<scope>provided</scope>` and supplied by the runtime.
 - the regenerated element template under `element-templates/`.
 
+Current checkout caveat: the generator configuration in `pom.xml` still points to
+`io.camunda.example.MyConnector` and `my-connector.json`, while this lab uses
+`ConcatenationConnector` and `Concatenation connector.json`. Align those settings before relying
+on Maven to regenerate the template.
+
 ### Shading
 
 `maven-shade-plugin` is preconfigured. Add `<relocations>` for libraries you ship that the runtime
@@ -140,8 +146,9 @@ mvn test-compile exec:java "-Dexec.mainClass=io.camunda.example.LocalConnectorRu
 mvn test-compile exec:java -Dexec.mainClass=io.camunda.example.LocalConnectorRuntime -Dexec.classpathScope=test
 ```
 
-Configure the Zeebe target in `src/test/resources/application.properties`. Without it, the runtime
-falls back to the embedded test broker spun up by the integration tests.
+Configure the Zeebe target and authentication in `src/test/resources/application.properties`.
+The checked-in file selects SaaS mode; `LocalConnectorRuntime` does not start an embedded broker.
+The embedded broker is used by the process-test integration-test harness only.
 
 ### Bundled Docker runtime (closer to production)
 
@@ -176,13 +183,17 @@ Then start `LocalConnectorRuntime` as above. Operate is at http://localhost:8088
 
 ## Testing
 
-Three layers, all run by `mvn clean verify`:
+The unit tests cover the concatenation behavior and input validation. The integration test is still
+the starter project's old `MyConnector`/`echo` sample; its BPMN type and operation do not match
+`ConcatenationConnector`, so it does not verify this connector. In the current checkout,
+`mvn clean package` runs six tests and fails the three integration tests; update that fixture before
+using the full Maven build as a passing verification gate.
 
 | Layer | File | Purpose |
 |---|---|---|
 | Unit (no runtime) | [`ConcatenationConnectorTest`](src/test/java/io/camunda/example/ConcatenationConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Verifies that `input1` and `input2` are concatenated with a space. |
 | Unit (no runtime) | [`ConcatenationRequestTest`](src/test/java/io/camunda/example/ConcatenationRequestTest.java) | Validation tests — ensures `@NotEmpty` constraints on `input1` and `input2` are enforced and raise `ConnectorInputException`. |
-| Integration | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Spins up an embedded Camunda + connector runtime and runs a real BPMN process via `@CamundaSpringProcessTest`. |
+| Integration (stale sample) | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Runs a real BPMN process via `@CamundaSpringProcessTest`, but currently invokes the unrelated `MyConnector`/`echo` sample rather than `ConcatenationConnector`. |
 
 The minimal pattern for unit-testing an annotations-based connector:
 
@@ -235,8 +246,6 @@ that catch out most authors:
   different operations works *only* if you also set distinct `condition` blocks — easier to use
   distinct IDs.
 
-Both should print nothing.
-
 ---
 
 ## Web Modeler vs Desktop Modeler
@@ -270,12 +279,13 @@ This template currently pins:
 
 | Component | Version | Property in `pom.xml` |
 |---|---|---|
-| Connector SDK & runtime libs | `8.9.1` | `version.connectors` |
-| Camunda process-test | `8.9.0` | `version.camunda` |
+| Connector SDK & runtime libs | `8.9.5` | `version.connectors` |
+| Camunda process-test | `8.9.13` | `version.camunda` |
 | Java | 21 | `maven.compiler.release` |
-| JUnit Jupiter | `6.0.2` | `version.junit-jupiter` |
+| JUnit Jupiter | `6.1.2` | `version.junit-jupiter` |
 | AssertJ | `3.27.4` | `version.assertj` |
-| Mockito | `5.21.0` | `version.mockito` |
+| Mockito | `5.23.0` | `version.mockito` |
+| Awaitility | `4.2.0` | `version.awaitility` |
 
 **Compatibility matrix**
 
