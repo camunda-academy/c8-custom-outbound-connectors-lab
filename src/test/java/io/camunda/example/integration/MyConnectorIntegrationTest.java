@@ -12,6 +12,7 @@ import static io.camunda.process.test.api.assertions.ElementSelectors.byName;
 
 @SpringBootTest(
     classes = {TestConnectorRuntimeApplication.class},
+    properties = "camunda.client.mode=self-managed",
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @CamundaSpringProcessTest
 public class MyConnectorIntegrationTest {
@@ -22,14 +23,15 @@ public class MyConnectorIntegrationTest {
   @Test
   void testMyConnectorFunctionality() {
     // given - start a process instance with input variables
-    final var message = "Hello from Test!";
+    final var input1 = "Hello";
+    final var input2 = "from Test!";
     final var processInstance =
         client
             .newCreateInstanceCommand()
             // processes in resources/bpmn are automatically deployed
             .bpmnProcessId("operation-connector-test-process")
             .latestVersion()
-                .variables(Map.of("message", message))
+            .variables(Map.of("input1", input1, "input2", input2))
             .send()
             .join();
 
@@ -37,21 +39,20 @@ public class MyConnectorIntegrationTest {
     assertThatProcessInstance(processInstance)
         .hasCompletedElements(byName("MyConnector"))
         // then - verify the result variable
-        .hasVariable("result", Map.of("myProperty", "Message received: "+message))
+        .hasVariable("result", Map.of("concatenationResult", input1 + " " + input2))
         .isCompleted();
   }
 
   @Test
-  void testConnectorWithAnExpectedFailure() {
+  void testConnectorWithEmptyFirstInput() {
     // given - start a process instance with input variables
-    final var message = "fail: Hello from Test!";
     final var processInstance =
             client
                     .newCreateInstanceCommand()
                     // processes in resources/bpmn are automatically deployed
                     .bpmnProcessId("operation-connector-test-process")
                     .latestVersion()
-                    .variables(Map.of("message", message))
+                    .variables(Map.of("input1", "", "input2", "World"))
                     .send()
                     .join();
 
@@ -60,16 +61,15 @@ public class MyConnectorIntegrationTest {
   }
 
   @Test
-  void testConnectorWithAnExpectedRetry() {
+  void testConnectorWithEmptySecondInput() {
     // given - start a process instance with input variables
-    final var message = "retry: Hello from Test!";
     final var processInstance =
             client
                     .newCreateInstanceCommand()
                     // processes in resources/bpmn are automatically deployed
                     .bpmnProcessId("operation-connector-test-process")
                     .latestVersion()
-                    .variables(Map.of("message", message))
+                    .variables(Map.of("input1", "Hello", "input2", ""))
                     .send()
                     .join();
 

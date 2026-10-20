@@ -6,18 +6,17 @@
     </bpmn:startEvent>
     <bpmn:serviceTask id="MyConnector" name="MyConnector" zeebe:modelerTemplate="io.camunda.example.template.v1" zeebe:modelerTemplateVersion="1" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTgiIHdpZHRoPSIxOCIgdmlld0JveD0iMCAwIDEwIDEwIiBzaGFwZS1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiI+PHRpdGxlPlNsYWNrPC90aXRsZT48ZyBmaWxsPSJub25lIj48cGF0aCBkPSJNMCwwIEwwLDEwIEwxMCwxMCBMMTAsMCB6IiBmaWxsPSIjZWNiMTJmIi8+PC9nPjwvc3ZnPg==">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="io.camunda:example:1" retries="3" />
+        <zeebe:taskDefinition type="io.camunda:concatenation-api:1" retries="3" />
         <zeebe:taskHeaders>
-          <zeebe:header key="operation" value="echo" />
+          <zeebe:header key="operation" value="concatenate" />
           <zeebe:header key="elementTemplateVersion" value="1" />
           <zeebe:header key="elementTemplateId" value="io.camunda.example.template.v1" />
           <zeebe:header key="resultVariable" value="result" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
         <zeebe:ioMapping>
-          <zeebe:input source="=message" target="message" />
-          <zeebe:input source="zeebe" target="authentication.user" />
-          <zeebe:input source="zeecret" target="authentication.token" />
+          <zeebe:input source="=input1" target="input1" />
+          <zeebe:input source="=input2" target="input2" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1fhp9db</bpmn:incoming>

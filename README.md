@@ -102,11 +102,6 @@ Produces:
 - a fat JAR (shaded). SDK artifacts are in `<scope>provided</scope>` and supplied by the runtime.
 - the regenerated element template under `element-templates/`.
 
-Current checkout caveat: the generator configuration in `pom.xml` still points to
-`io.camunda.example.MyConnector` and `my-connector.json`, while this lab uses
-`ConcatenationConnector` and `Concatenation connector.json`. Align those settings before relying
-on Maven to regenerate the template.
-
 ### Shading
 
 `maven-shade-plugin` is preconfigured. Add `<relocations>` for libraries you ship that the runtime
@@ -183,17 +178,16 @@ Then start `LocalConnectorRuntime` as above. Operate is at http://localhost:8088
 
 ## Testing
 
-The unit tests cover the concatenation behavior and input validation. The integration test is still
-the starter project's old `MyConnector`/`echo` sample; its BPMN type and operation do not match
-`ConcatenationConnector`, so it does not verify this connector. In the current checkout,
-`mvn clean package` runs six tests and fails the three integration tests; update that fixture before
-using the full Maven build as a passing verification gate.
+The unit tests cover concatenation behavior and input validation. The integration tests run
+`ConcatenationConnector` against a local Camunda test container, verifying the result and incidents
+for empty inputs. They override the local runtime's SaaS mode and require Docker, not SaaS credentials.
+Run all six tests and verify packaging and template generation with `mvn --batch-mode clean verify`.
 
 | Layer | File | Purpose |
 |---|---|---|
 | Unit (no runtime) | [`ConcatenationConnectorTest`](src/test/java/io/camunda/example/ConcatenationConnectorTest.java) | Happy-path test using `OutboundConnectorContextBuilder` from `connector-runtime-test`. Verifies that `input1` and `input2` are concatenated with a space. |
 | Unit (no runtime) | [`ConcatenationRequestTest`](src/test/java/io/camunda/example/ConcatenationRequestTest.java) | Validation tests — ensures `@NotEmpty` constraints on `input1` and `input2` are enforced and raise `ConnectorInputException`. |
-| Integration (stale sample) | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Runs a real BPMN process via `@CamundaSpringProcessTest`, but currently invokes the unrelated `MyConnector`/`echo` sample rather than `ConcatenationConnector`. |
+| Integration | [`MyConnectorIntegrationTest`](src/test/java/io/camunda/example/integration/MyConnectorIntegrationTest.java) | Runs a real BPMN process via `@CamundaSpringProcessTest`, verifying concatenation and validation incidents for each empty input. |
 
 The minimal pattern for unit-testing an annotations-based connector:
 
