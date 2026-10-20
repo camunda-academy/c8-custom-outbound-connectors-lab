@@ -1,73 +1,172 @@
 {
-  "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "Concatenation connector",
-  "id": "concatenator-connector-template",
-  "version": 1,
-  "description": "Blank connector template",
-  "category": {
-    "id": "connectors",
-    "name": "Connectors"
+  "$schema" : "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name" : "Concatenation connector",
+  "id" : "concatenator-connector-template",
+  "metadata" : {
+    "keywords" : [ ]
   },
-  "elementType": {
-    "value": "bpmn:ServiceTask"
+  "version" : 1,
+  "category" : {
+    "id" : "connectors",
+    "name" : "Connectors"
   },
-  "appliesTo": [
-    "bpmn:Task"
-  ],
-  "properties": [
-    {
-      "label": "First text",
-      "description": "The first input of type String",
-      "type": "String",
-      "value": "=input1",
-      "feel": "optional",
-      "binding": {
-        "type": "zeebe:input",
-        "name": "input1"
-      },
-      "constraints": {
-        "notEmpty": true
-      }
+  "appliesTo" : [ "bpmn:Task" ],
+  "elementType" : {
+    "value" : "bpmn:ServiceTask"
+  },
+  "groups" : [ {
+    "id" : "operation",
+    "label" : "Operation"
+  }, {
+    "id" : "connector",
+    "label" : "Connector"
+  }, {
+    "id" : "output",
+    "label" : "Output mapping"
+  }, {
+    "id" : "error",
+    "label" : "Error handling"
+  }, {
+    "id" : "retries",
+    "label" : "Retries"
+  } ],
+  "properties" : [ {
+    "value" : "io.camunda:concatenation-api:1",
+    "binding" : {
+      "property" : "type",
+      "type" : "zeebe:taskDefinition"
     },
-    {
-      "label": "Second text",
-      "description": "The second input of type String",
-      "type": "String",
-      "value": "=input2",
-      "feel": "optional",
-      "binding": {
-        "type": "zeebe:input",
-        "name": "input2"
-      },
-      "constraints": {
-        "notEmpty": true
-      }
+    "type" : "Hidden"
+  }, {
+    "id" : "operation",
+    "label" : "Operation",
+    "description" : "The operation to execute",
+    "value" : "concatenate",
+    "group" : "operation",
+    "binding" : {
+      "key" : "operation",
+      "type" : "zeebe:taskHeader"
     },
-    {
-      "label": "Result Variable",
-      "description": "Name of variable to store the response in",
-      "type": "String",
-      "value": "concatenationResult",
-      "binding": {
-        "type": "zeebe:taskHeader",
-        "key": "resultVariable"
-      }
+    "type" : "Hidden"
+  }, {
+    "id" : "concatenate:input1",
+    "label" : "Input 1",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
     },
-    {
-      "type": "Hidden",
-      "value": "concatenate",
-      "binding": {
-        "type": "zeebe:taskHeader",
-        "key": "operation"
-      }
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "input1",
+      "type" : "zeebe:input"
     },
-    {
-      "type": "Hidden",
-      "value": "io.camunda:concatenation-api:1",
-      "binding": {
-        "type": "zeebe:taskDefinition",
-        "property": "type"
-      }
-    }
-  ]
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "concatenate",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Text"
+  }, {
+    "id" : "concatenate:input2",
+    "label" : "Input 2",
+    "optional" : false,
+    "constraints" : {
+      "notEmpty" : true
+    },
+    "feel" : "optional",
+    "group" : "operation",
+    "binding" : {
+      "name" : "input2",
+      "type" : "zeebe:input"
+    },
+    "condition" : {
+      "allMatch" : [ {
+        "property" : "operation",
+        "equals" : "concatenate",
+        "type" : "simple"
+      } ]
+    },
+    "type" : "Text"
+  }, {
+    "id" : "version",
+    "label" : "Version",
+    "description" : "Version of the element template",
+    "value" : "1",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateVersion",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "id",
+    "label" : "ID",
+    "description" : "ID of the element template",
+    "value" : "concatenator-connector-template",
+    "group" : "connector",
+    "binding" : {
+      "key" : "elementTemplateId",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Hidden"
+  }, {
+    "id" : "resultVariable",
+    "label" : "Result variable",
+    "description" : "Name of variable to store the response in",
+    "value" : "concatenationResult",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultVariable",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  }, {
+    "id" : "resultExpression",
+    "label" : "Result expression",
+    "description" : "Expression to map the response into process variables",
+    "feel" : "required",
+    "group" : "output",
+    "binding" : {
+      "key" : "resultExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "errorExpression",
+    "label" : "Error expression",
+    "description" : "Expression to handle errors. Details in the <a href=\"https://docs.camunda.io/docs/components/connectors/use-connectors/\" target=\"_blank\">documentation</a>.",
+    "feel" : "required",
+    "group" : "error",
+    "binding" : {
+      "key" : "errorExpression",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "Text"
+  }, {
+    "id" : "retryCount",
+    "label" : "Retries",
+    "description" : "Number of retries",
+    "value" : "3",
+    "feel" : "optional",
+    "group" : "retries",
+    "binding" : {
+      "property" : "retries",
+      "type" : "zeebe:taskDefinition"
+    },
+    "type" : "String"
+  }, {
+    "id" : "retryBackoff",
+    "label" : "Retry backoff",
+    "description" : "ISO-8601 duration to wait between retries",
+    "value" : "PT0S",
+    "group" : "retries",
+    "binding" : {
+      "key" : "retryBackoff",
+      "type" : "zeebe:taskHeader"
+    },
+    "type" : "String"
+  } ]
 }

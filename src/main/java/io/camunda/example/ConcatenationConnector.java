@@ -4,6 +4,7 @@ import io.camunda.connector.api.annotation.Operation;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.annotation.Variable;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
+import io.camunda.connector.generator.java.annotation.ElementTemplate;
 import io.camunda.example.model.ConcatenationConnectorRequest;
 import io.camunda.example.model.ConcatenationConnectorResult;
 
@@ -11,6 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@ElementTemplate(
+    id = "concatenator-connector-template",
+    name = "Concatenation connector",
+    version = 1,
+    defaultResultVariable = "concatenationResult")
 @OutboundConnector(
     name = "concatenation-connector",
     inputVariables = {"input1", "input2"},
@@ -35,4 +41,3 @@ public class ConcatenationConnector implements OutboundConnectorProvider {
     return result;
   }
 }
-
