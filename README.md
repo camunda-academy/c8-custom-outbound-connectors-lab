@@ -151,7 +151,7 @@ For an environment closer to what runs in self-managed:
 
 ```bash
 git clone git@github.com:camunda/camunda-distributions.git
-cd camunda-distributions/docker-compose/versions/camunda-8.9
+cd camunda-distributions/docker-compose/versions/camunda-8.10
 # either comment out the connectors service in docker-compose-core.yaml,
 # or scale it to zero so the runtime you start locally is the one picking up jobs:
 docker compose -f docker-compose-core.yaml up --scale connectors=0
@@ -160,13 +160,13 @@ docker compose -f docker-compose-core.yaml up --scale connectors=0
 Then start `LocalConnectorRuntime` as above. Operate is at http://localhost:8088/operate
 (`demo` / `demo`).
 
-> **Note**: this template targets Camunda **8.9.x**. Pin distributions to the matching minor —
+> **Note**: this template targets Camunda **8.10.x**. Pin distributions to the matching minor —
 > running against a different minor will surface as deserialization errors or incident messages
 > about unknown headers.
 
 ### SaaS
 
-1. https://console.camunda.io → create a cluster (latest 8.9 patch).
+1. https://console.camunda.io → create a cluster (latest 8.10 patch).
 2. **API → Create new Client**, tick `Zeebe`, **Create**.
 3. Copy the **Spring Boot** snippet into `src/test/resources/application.properties`.
 4. Start `LocalConnectorRuntime` — the connector connects to your SaaS cluster.
@@ -273,18 +273,19 @@ This template currently pins:
 
 | Component | Version | Property in `pom.xml` |
 |---|---|---|
-| Connector SDK & runtime libs | `8.9.5` | `version.connectors` |
-| Camunda process-test | `8.9.13` | `version.camunda` |
+| Connector SDK & runtime libs | `8.10.1` | `version.connectors` |
+| Camunda process-test | `8.10.5` | `version.camunda` |
 | Java | 21 | `maven.compiler.release` |
-| JUnit Jupiter | `6.1.2` | `version.junit-jupiter` |
-| AssertJ | `3.27.4` | `version.assertj` |
-| Mockito | `5.23.0` | `version.mockito` |
-| Awaitility | `4.2.0` | `version.awaitility` |
+| JUnit Jupiter | `6.1.3` | `version.junit-jupiter` |
+| AssertJ | `3.27.7` | `version.assertj` |
+| Mockito | `5.24.0` | `version.mockito` |
+| Awaitility | `4.3.0` | `version.awaitility` |
 
 **Compatibility matrix**
 
 | Connector SDK | Camunda runtime | Modeler (Desktop) | Modeler (Web) |
 |---|---|---|---|
+| `8.10.x` | `8.10.x` self-managed or SaaS | latest | latest |
 | `8.9.x` | `8.9.x` self-managed or SaaS | latest | latest |
 | `8.8.x` | `8.8.x` | latest | latest |
 
