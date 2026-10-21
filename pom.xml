@@ -148,7 +148,7 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.MyConnector</connectorClass>
+              <connectorClass>io.camunda.example.ConcatenationConnector</connectorClass>
               <files>
                 <file>
                   <templateId>io.camunda.example.template.v1</templateId>
